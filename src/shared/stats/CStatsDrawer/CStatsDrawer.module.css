@@ -1,0 +1,250 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(17, 24, 45, 0.38);
+  backdrop-filter: blur(5px);
+  animation: stats-fade-in 0.2s ease-out;
+}
+
+.drawer {
+  width: min(720px, 94vw);
+  height: 100dvh;
+  overflow-y: auto;
+  background: radial-gradient(
+      circle at 100% 0,
+      rgba(199, 248, 61, 0.32),
+      transparent 260px
+    ),
+    var(--paper);
+  border-left: 1px solid rgba(17, 24, 45, 0.18);
+  box-shadow: -28px 0 70px rgba(17, 24, 45, 0.18);
+  padding: 34px clamp(24px, 4vw, 48px) 30px;
+  animation: stats-slide-in 0.28s cubic-bezier(0.22, 0.75, 0.22, 1);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 25px;
+  padding-bottom: 27px;
+  border-bottom: 1px solid var(--line);
+}
+
+.header p {
+  margin: 0 0 13px;
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+}
+
+.header h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(32px, 5vw, 47px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.header span {
+  display: block;
+  max-width: 500px;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.close {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 27px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.close:hover {
+  background: var(--ink);
+  color: var(--lime);
+  transform: rotate(4deg);
+}
+
+.close:focus-visible {
+  outline: 3px solid rgba(92, 124, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  gap: 7px;
+  margin: 21px 0 26px;
+}
+
+.fourColumns {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.overview > div {
+  min-height: 82px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.62);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.overview > div.accent {
+  background: var(--ink);
+  color: white;
+  border-color: var(--ink);
+  transform: rotate(-1deg);
+}
+
+.overview span {
+  max-width: 95px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.overview .accent span {
+  color: var(--lime);
+}
+
+.overview strong {
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.overview strong small {
+  margin-left: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.empty {
+  min-height: 390px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.emptyMark {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 24px;
+  border-radius: 44% 56% 48% 52%;
+  background: var(--lime);
+  box-shadow: 7px 7px 0 var(--ink);
+  font-family: Georgia, serif;
+  font-size: 42px;
+  transform: rotate(-5deg);
+}
+
+.empty h3 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 29px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.empty p {
+  max-width: 350px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.note {
+  margin: 27px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@keyframes stats-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes stats-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(38px);
+  }
+}
+
+@media (max-width: 700px) {
+  .overlay {
+    align-items: flex-end;
+  }
+
+  .drawer {
+    width: 100%;
+    height: min(92dvh, 820px);
+    padding: 24px 16px;
+    border: 0;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .header {
+    padding-bottom: 21px;
+  }
+
+  .header h2 {
+    font-size: 34px;
+  }
+
+  .header span {
+    font-size: 12px;
+  }
+
+  .overview {
+    gap: 5px;
+    margin-top: 18px;
+  }
+
+  .fourColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview > div {
+    min-height: 74px;
+    padding: 11px 9px;
+    border-radius: 12px;
+  }
+
+  .overview strong {
+    font-size: 22px;
+  }
+
+  .overview span {
+    font-size: 8px;
+  }
+}

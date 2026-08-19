@@ -1,0 +1,70 @@
+.panel {
+  margin-top: 28px;
+}
+
+.group + .group {
+  margin-top: 18px;
+}
+
+.group > p {
+  margin: 0 0 9px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  gap: 7px;
+}
+
+.reflexiveGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.prepositionGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.grid button {
+  min-width: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  padding: 12px 7px;
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease,
+    background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.grid button:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.grid button.selected {
+  border-color: var(--ink);
+  background: var(--lime);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+
+@media (max-width: 700px) {
+  .prepositionGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .reflexiveGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .grid button {
+    padding: 11px 4px;
+    font-size: 16px;
+  }
+}

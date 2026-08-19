@@ -1,18 +1,16 @@
-export type CycleId = string | number;
-
-export type TrainerCycleState<Id extends CycleId> = {
+export interface ITrainerCycleState<Id extends string | number> {
   cycle: number;
   seenIds: Id[];
   activeRunIds: Id[];
   cursor: number;
-};
+}
 
-type PrepareRunOptions<T, Id extends CycleId> = {
+export interface IPrepareRunOptions<T, Id extends string | number> {
   items: T[];
   runSize: number;
   getId: (item: T) => Id;
-  state?: TrainerCycleState<Id> | null;
-};
+  state?: ITrainerCycleState<Id> | null;
+}
 
 const STORAGE_KEY = "endgegner-trainer-cycles-v1";
 
@@ -25,16 +23,16 @@ function shuffled<T>(items: T[]) {
   return result;
 }
 
-function emptyState<Id extends CycleId>(): TrainerCycleState<Id> {
+function emptyState<Id extends string | number>(): ITrainerCycleState<Id> {
   return { cycle: 1, seenIds: [], activeRunIds: [], cursor: 0 };
 }
 
-export function prepareCyclicRun<T, Id extends CycleId>({
+export function prepareCyclicRun<T, Id extends string | number>({
   items,
   runSize,
   getId,
   state,
-}: PrepareRunOptions<T, Id>) {
+}: IPrepareRunOptions<T, Id>) {
   if (!items.length || runSize <= 0) {
     return { items: [] as T[], state: emptyState<Id>() };
   }
@@ -42,7 +40,10 @@ export function prepareCyclicRun<T, Id extends CycleId>({
   const byId = new Map(items.map((item) => [getId(item), item]));
   const current = state ?? emptyState<Id>();
   const activeRunIds = current.activeRunIds.filter((id) => byId.has(id));
-  const cursor = Math.min(Math.max(current.cursor, 0), Math.max(activeRunIds.length - 1, 0));
+  const cursor = Math.min(
+    Math.max(current.cursor, 0),
+    Math.max(activeRunIds.length - 1, 0),
+  );
 
   if (activeRunIds.length) {
     return {
@@ -78,7 +79,7 @@ export function prepareCyclicRun<T, Id extends CycleId>({
     }
   }
 
-  const nextState: TrainerCycleState<Id> = {
+  const nextState: ITrainerCycleState<Id> = {
     cycle,
     seenIds: [...seen],
     activeRunIds: selected.map(getId),
@@ -88,32 +89,48 @@ export function prepareCyclicRun<T, Id extends CycleId>({
   return { items: selected, state: nextState };
 }
 
-export function advanceCyclicRun<Id extends CycleId>(state: TrainerCycleState<Id>) {
+export function advanceCyclicRun<Id extends string | number>(
+  state: ITrainerCycleState<Id>,
+) {
   return {
     ...state,
-    cursor: Math.min(state.cursor + 1, Math.max(state.activeRunIds.length - 1, 0)),
+    cursor: Math.min(
+      state.cursor + 1,
+      Math.max(state.activeRunIds.length - 1, 0),
+    ),
   };
 }
 
-export function completeCyclicRun<Id extends CycleId>(state: TrainerCycleState<Id>) {
+export function completeCyclicRun<Id extends string | number>(
+  state: ITrainerCycleState<Id>,
+) {
   return { ...state, activeRunIds: [], cursor: 0 };
 }
 
-export function loadTrainerCycleState<Id extends CycleId>(trainerId: string) {
+export function loadTrainerCycleState<Id extends string | number>(
+  trainerId: string,
+) {
   if (typeof window === "undefined") return null;
   try {
-    const store = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as Record<string, TrainerCycleState<Id>>;
+    const store = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) ?? "{}",
+    ) as Record<string, ITrainerCycleState<Id>>;
     return store[trainerId] ?? null;
   } catch {
     return null;
   }
 }
 
-export function saveTrainerCycleState<Id extends CycleId>(trainerId: string, state: TrainerCycleState<Id>) {
+export function saveTrainerCycleState<Id extends string | number>(
+  trainerId: string,
+  state: ITrainerCycleState<Id>,
+) {
   if (typeof window === "undefined") return;
-  let store: Record<string, TrainerCycleState<Id>> = {};
+  let store: Record<string, ITrainerCycleState<Id>> = {};
   try {
-    store = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as Record<string, TrainerCycleState<Id>>;
+    store = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) ?? "{}",
+    ) as Record<string, ITrainerCycleState<Id>>;
   } catch {
     store = {};
   }

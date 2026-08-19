@@ -1,26 +1,24 @@
-export type VerbCaseKey = "acc" | "dat";
-
-export type VerbQuestion = {
+export interface IVerbQuestion {
   id: number;
   before: string;
   after: string;
   answer: string;
   reflexiveAnswer: string | null;
   preposition: string;
-  caseKey: VerbCaseKey;
+  caseKey: "acc" | "dat";
   patternId: string;
   frame: string;
   verb: string;
   tense: "Präsens" | "Perfekt" | "Futur I" | "Konjunktiv II";
   isQuestion: boolean;
-};
+}
 
-type VerbPattern = {
+export interface IVerbPattern {
   id: string;
   verb: string;
   frame: string;
   preposition: string;
-  caseKey: VerbCaseKey;
+  caseKey: "acc" | "dat";
   reflexive: boolean;
   infinitive: string;
   presentIch: string;
@@ -28,7 +26,7 @@ type VerbPattern = {
   participle: string;
   presentTail?: string;
   objects: [string, string, string, string, string];
-};
+}
 
 export const REFLEXIVE_CHOICES = ["mich", "dich", "sich", "uns", "euch"] as const;
 export const PREPOSITION_CHOICES = [
@@ -46,7 +44,7 @@ export const PREPOSITION_CHOICES = [
   "zu",
 ] as const;
 
-const PATTERNS: VerbPattern[] = [
+const PATTERNS: IVerbPattern[] = [
   {
     id: "denken-an",
     verb: "denken",
@@ -575,11 +573,11 @@ function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function answerFor(pattern: VerbPattern, reflexiveAnswer: string | null) {
+function answerFor(pattern: IVerbPattern, reflexiveAnswer: string | null) {
   return pattern.reflexive ? `${reflexiveAnswer} ${pattern.preposition}` : pattern.preposition;
 }
 
-function createQuestions(pattern: VerbPattern, patternIndex: number): VerbQuestion[] {
+function createQuestions(pattern: IVerbPattern, patternIndex: number): IVerbQuestion[] {
   const startId = patternIndex * 5 + 1;
   const tail = pattern.presentTail ?? "";
   const make = (
@@ -587,9 +585,9 @@ function createQuestions(pattern: VerbPattern, patternIndex: number): VerbQuesti
     before: string,
     after: string,
     reflexiveAnswer: string | null,
-    tense: VerbQuestion["tense"],
+    tense: IVerbQuestion["tense"],
     isQuestion = false,
-  ): VerbQuestion => ({
+  ): IVerbQuestion => ({
     id: startId + offset,
     before,
     after,

@@ -13,11 +13,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface IRootLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function CRootLayout({ children }: IRootLayoutProps) {
   return (
     <html lang="de">
       <body className="antialiased">{children}</body>

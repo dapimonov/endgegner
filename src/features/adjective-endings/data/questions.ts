@@ -1,24 +1,19 @@
-import { EXTRA_QUESTIONS } from "./questions-extra";
+import { EXTRA_QUESTIONS } from "./questionsExtra";
 
-export type CaseKey = "nom" | "acc" | "dat" | "gen";
-export type GenderKey = "m" | "f" | "n" | "pl";
-export type ArticleKey = "definite" | "ein" | "quantity" | "zero";
-export type Ending = "e" | "en" | "er" | "es" | "em";
-
-export type Question = {
+export interface IQuestion {
   id: number;
   before: string;
   after: string;
   lemma: string;
   answer: string;
-  ending: Ending;
+  ending: "e" | "en" | "er" | "es" | "em";
   clue: string;
-  caseKey: CaseKey;
-  gender: GenderKey;
-  article: ArticleKey;
-};
+  caseKey: "nom" | "acc" | "dat" | "gen";
+  gender: "m" | "f" | "n" | "pl";
+  article: "definite" | "ein" | "quantity" | "zero";
+}
 
-const BASE_QUESTIONS: Question[] = [
+const BASE_QUESTIONS: IQuestion[] = [
   { id: 1, before: "Der ", after: " Kollege beginnt heute.", lemma: "neu", answer: "neue", ending: "e", clue: "der", caseKey: "nom", gender: "m", article: "definite" },
   { id: 2, before: "Die ", after: " Ärztin erklärt alles.", lemma: "freundlich", answer: "freundliche", ending: "e", clue: "die", caseKey: "nom", gender: "f", article: "definite" },
   { id: 3, before: "Das ", after: " Kind schläft schon.", lemma: "klein", answer: "kleine", ending: "e", clue: "das", caseKey: "nom", gender: "n", article: "definite" },
@@ -85,4 +80,4 @@ const BASE_QUESTIONS: Question[] = [
   { id: 64, before: "Seine ", after: " Antwort überrascht niemanden.", lemma: "kurz", answer: "kurze", ending: "e", clue: "seine", caseKey: "nom", gender: "f", article: "ein" },
 ];
 
-export const QUESTIONS: Question[] = [...BASE_QUESTIONS, ...EXTRA_QUESTIONS];
+export const QUESTIONS: IQuestion[] = [...BASE_QUESTIONS, ...EXTRA_QUESTIONS];

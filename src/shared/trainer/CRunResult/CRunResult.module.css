@@ -1,0 +1,122 @@
+.card {
+  position: relative;
+  background: rgba(255, 253, 247, 0.93);
+  border: 1px solid rgba(17, 24, 45, 0.12);
+  border-radius: 26px;
+  box-shadow: 0 24px 65px rgba(42, 45, 72, 0.13);
+  overflow: hidden;
+  padding: clamp(42px, 8vw, 74px);
+  text-align: center;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  background: var(--lime);
+  border-radius: 48% 52% 50% 50%;
+  top: -105px;
+  left: -70px;
+  z-index: 0;
+}
+
+.burst {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 44% 56% 49% 51%;
+  background: var(--coral);
+  color: white;
+  font-size: 45px;
+  font-weight: 900;
+  transform: rotate(-5deg);
+  box-shadow: 7px 7px 0 var(--ink);
+}
+
+.burst small {
+  font-size: 14px;
+  position: absolute;
+  bottom: 18px;
+  right: 20px;
+}
+
+.card h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(38px, 6vw, 64px);
+  letter-spacing: -0.04em;
+  margin: 30px 0 0;
+}
+
+.subtitle {
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 590px;
+  margin: 32px auto 20px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  overflow: hidden;
+}
+
+.grid div {
+  padding: 17px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.grid div + div {
+  border-left: 1px solid var(--line);
+}
+
+.grid strong {
+  font-size: 25px;
+}
+
+.grid span {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.weakSpot {
+  max-width: 590px;
+  margin: 0 auto 20px;
+  padding: 13px 16px;
+  border-radius: 13px;
+  background: #eef0f8;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.weakSpot span {
+  color: var(--muted);
+}
+
+.button {
+  margin: 4px auto 0;
+}
+
+@media (max-width: 700px) {
+  .card {
+    border-radius: 20px;
+    padding: 42px 18px;
+  }
+
+  .grid strong {
+    font-size: 21px;
+  }
+
+  .weakSpot {
+    flex-direction: column;
+  }
+}

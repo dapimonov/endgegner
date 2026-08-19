@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import "../app/globals.css";
-import Home from "../app/page";
+import { CEndgegnerApp } from "../src/application/CEndgegnerApp/CEndgegnerApp";
 
 const root = document.getElementById("root");
 
@@ -12,6 +12,6 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <Home />
+    <CEndgegnerApp />
   </StrictMode>,
 );

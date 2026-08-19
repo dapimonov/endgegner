@@ -1,0 +1,63 @@
+.panel {
+  margin-top: 30px;
+}
+
+.panel > p {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.grid button {
+  position: relative;
+  border: 1.5px solid var(--line);
+  background: white;
+  border-radius: 13px;
+  padding: 14px 8px;
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-size: 21px;
+  cursor: pointer;
+  transition: 0.16s ease;
+}
+
+.grid button kbd {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  color: #9a9ca5;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.grid button:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.grid button.selected {
+  background: var(--lime);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+@media (max-width: 700px) {
+  .grid {
+    gap: 5px;
+  }
+
+  .grid button {
+    font-size: 18px;
+    padding: 12px 2px;
+  }
+}

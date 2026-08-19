@@ -1,6 +1,6 @@
-import type { Question } from "./questions";
+import type { IQuestion } from "./questions";
 
-export const EXTRA_QUESTIONS: Question[] = [
+export const EXTRA_QUESTIONS: IQuestion[] = [
   // Definite article words: der/dieser/jeder/welcher/mancher/solcher/alle/beide …
   { id: 65, before: "Dieser ", after: " Sportler trainiert jeden Tag.", lemma: "jung", answer: "junge", ending: "e", clue: "dieser", caseKey: "nom", gender: "m", article: "definite" },
   { id: 66, before: "Jeder ", after: " Trainer kennt seine Mannschaft genau.", lemma: "gut", answer: "gute", ending: "e", clue: "jeder", caseKey: "nom", gender: "m", article: "definite" },

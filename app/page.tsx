@@ -17,10 +17,11 @@ import {
   saveTrainerCycleState,
   TrainerCycleState,
 } from "./trainer-cycle";
+import VerbTrainer from "./verb-trainer";
 
 type Language = "ru" | "en";
 type AnswerMode = "word" | "ending";
-type AppView = "home" | "trainer";
+type AppView = "home" | "adjective" | "verb";
 type SkillStats = Record<string, { correct: number; total: number }>;
 
 const SESSION_LENGTH = 10;
@@ -41,6 +42,8 @@ const copy = {
     available: "доступно",
     adjectiveTitle: "Окончания прилагательных",
     adjectiveDescription: "Ставь правильную форму в живом предложении и сразу разбирай грамматический сигнал.",
+    verbTitle: "Управление глаголов",
+    verbDescription: "Собирай глагол вместе с нужным предлогом, падежом и возвратным местоимением.",
     enterArena: "В бой",
     moreSoon: "Новые противники появятся здесь позже.",
     home: "Все тренажёры",
@@ -107,6 +110,8 @@ const copy = {
     available: "ready",
     adjectiveTitle: "Adjective endings",
     adjectiveDescription: "Build the right form inside a real sentence and see the grammar signal immediately.",
+    verbTitle: "Verb government",
+    verbDescription: "Build the verb together with its preposition, case, and reflexive pronoun.",
     enterArena: "Enter arena",
     moreSoon: "New opponents will appear here later.",
     home: "All trainers",
@@ -239,12 +244,12 @@ export default function Home() {
   }, [language, mode, restored]);
 
   useEffect(() => {
-    if (view === "trainer" && !statsOpen && !result && mode === "word") inputRef.current?.focus();
+    if (view === "adjective" && !statsOpen && !result && mode === "word") inputRef.current?.focus();
   }, [index, mode, result, statsOpen, view]);
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
-      if (view !== "trainer" || statsOpen || finished || result || mode !== "ending") return;
+      if (view !== "adjective" || statsOpen || finished || result || mode !== "ending") return;
       const shortcutIndex = Number(event.key) - 1;
       if (shortcutIndex >= 0 && shortcutIndex < ENDINGS.length) {
         event.preventDefault();
@@ -377,7 +382,19 @@ export default function Home() {
 
   function enterTrainer() {
     if (!questions.length) prepareSession();
-    setView("trainer");
+    setView("adjective");
+  }
+
+  function enterVerbTrainer() {
+    setView("verb");
+  }
+
+  function registerLifetimeCorrect() {
+    setLifetimeCorrect((current) => {
+      const next = current + 1;
+      localStorage.setItem("endgegner-correct", String(next));
+      return next;
+    });
   }
 
   const weakSpot = useMemo(() => {
@@ -462,38 +479,74 @@ export default function Home() {
 
           <div className="trainer-section-heading">
             <h2>{t.trainers}</h2>
-            <span>01 / —</span>
+            <span>02 / —</span>
           </div>
 
-          <button className="trainer-tile" onClick={enterTrainer}>
-            <div className="tile-copy">
-              <div className="tile-topline">
-                <span className="tile-number">01</span>
-                <span className="tile-status"><i />{t.available}</span>
+          <div className="trainer-grid">
+            <button className="trainer-tile" onClick={enterTrainer}>
+              <div className="tile-copy">
+                <div className="tile-topline">
+                  <span className="tile-number">01</span>
+                  <span className="tile-status"><i />{t.available}</span>
+                </div>
+                <div>
+                  <p className="tile-category">ADJEKTIV-DEKLINATION</p>
+                  <h3>{t.adjectiveTitle}</h3>
+                  <p className="tile-description">{t.adjectiveDescription}</p>
+                </div>
+                <div className="tile-bottom">
+                  <strong>{t.enterArena} <i>→</i></strong>
+                </div>
               </div>
-              <div>
-                <p className="tile-category">ADJEKTIV-DEKLINATION</p>
-                <h3>{t.adjectiveTitle}</h3>
-                <p className="tile-description">{t.adjectiveDescription}</p>
+              <div className="tile-visual" aria-hidden="true">
+                <span className="tile-orbit" />
+                <strong>alt<em>__</em></strong>
+                <small>-e · -en · -er · -es · -em</small>
               </div>
-              <div className="tile-bottom">
-                <strong>{t.enterArena} <i>→</i></strong>
+            </button>
+
+            <button className="trainer-tile verb-tile" onClick={enterVerbTrainer}>
+              <div className="tile-copy">
+                <div className="tile-topline">
+                  <span className="tile-number">02</span>
+                  <span className="tile-status"><i />{t.available}</span>
+                </div>
+                <div>
+                  <p className="tile-category">VERBREKTION</p>
+                  <h3>{t.verbTitle}</h3>
+                  <p className="tile-description">{t.verbDescription}</p>
+                </div>
+                <div className="tile-bottom">
+                  <strong>{t.enterArena} <i>→</i></strong>
+                </div>
               </div>
-            </div>
-            <div className="tile-visual" aria-hidden="true">
-              <span className="tile-orbit" />
-              <strong>alt<em>__</em></strong>
-              <small>-e · -en · -er · -es · -em</small>
-            </div>
-          </button>
+              <div className="tile-visual" aria-hidden="true">
+                <span className="tile-orbit" />
+                <strong><em>sich</em> __</strong>
+                <small>an · auf · mit · über · um</small>
+              </div>
+            </button>
+          </div>
 
           <p className="more-soon">↳ {t.moreSoon}</p>
         </section>
 
         <footer>
-          <span>ENDGEGNER / ARENA 01</span>
+          <span>ENDGEGNER / ARENA 02</span>
         </footer>
       </main>
+    );
+  }
+
+  if (view === "verb") {
+    return (
+      <VerbTrainer
+        language={language}
+        onLanguageChange={setLanguage}
+        onHome={goHome}
+        lifetimeCorrect={lifetimeCorrect}
+        onCorrect={registerLifetimeCorrect}
+      />
     );
   }
 

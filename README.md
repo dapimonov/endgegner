@@ -1,9 +1,9 @@
 # ENDGEGNER
 
-A bilingual German practice app for drilling adjective endings. The current
-trainer includes 200 sentences, full case/gender/determiner mixes, detailed
-statistics, and cycle-based scheduling that avoids repeats until the whole
-question bank has been seen.
+A bilingual German practice app with separate trainers for adjective endings
+and verb government. Each trainer includes 200 exercises, detailed statistics,
+and cycle-based scheduling that avoids repeats until its whole question bank
+has been seen.
 
 ## Stack
 

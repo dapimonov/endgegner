@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CArenaScreen } from "../../features/arena/CArenaScreen/CArenaScreen";
 import { CAdjectiveTrainer } from "../../features/adjective-endings/CAdjectiveTrainer/CAdjectiveTrainer";
 import { CVerbTrainer } from "../../features/verb-patterns/CVerbTrainer/CVerbTrainer";
+import { CParticipleTrainer } from "../../features/participle-two/CParticipleTrainer/CParticipleTrainer";
 import { EAppView } from "../../shared/model";
 import { useAppPreferences } from "../useAppPreferences";
 
@@ -38,6 +39,18 @@ export function CEndgegnerApp() {
     );
   }
 
+  if (view === EAppView.ParticipleTwo) {
+    return (
+      <CParticipleTrainer
+        language={preferences.language}
+        onLanguageChange={preferences.setLanguage}
+        lifetimeCorrect={preferences.lifetimeCorrect}
+        onCorrect={preferences.registerCorrect}
+        onHome={() => setView(EAppView.Arena)}
+      />
+    );
+  }
+
   return (
     <CArenaScreen
       language={preferences.language}
@@ -45,6 +58,7 @@ export function CEndgegnerApp() {
       lifetimeCorrect={preferences.lifetimeCorrect}
       onAdjectiveTrainer={() => setView(EAppView.AdjectiveEndings)}
       onVerbTrainer={() => setView(EAppView.VerbPatterns)}
+      onParticipleTrainer={() => setView(EAppView.ParticipleTwo)}
     />
   );
 }

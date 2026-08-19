@@ -19,7 +19,7 @@ export function CVerbStats({ copy, trainer }: IVerbStatsProps) {
 
   return (
     <CStatsDrawer
-      eyebrow="VERBREKTION / STATS"
+      eyebrow="VERBEN MIT PRÄPOSITIONEN / STATS"
       titleId="verb-stats-title"
       title={copy.statsTitle}
       subtitle={copy.statsSubtitle}

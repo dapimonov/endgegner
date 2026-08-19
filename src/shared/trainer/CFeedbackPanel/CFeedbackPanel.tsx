@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 
 import { EAnswerResult } from "../../model";
 import { CPrimaryButton } from "../CPrimaryButton/CPrimaryButton";
@@ -28,6 +29,37 @@ export function CFeedbackPanel({
   nextLabel,
   onNext,
 }: IFeedbackPanelProps) {
+  useEffect(() => {
+    function handleEnter(event: KeyboardEvent) {
+      if (
+        event.key !== "Enter" ||
+        event.repeat ||
+        event.isComposing ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest("button, input, textarea, select, a")
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      onNext();
+    }
+
+    window.addEventListener("keydown", handleEnter);
+    return () => window.removeEventListener("keydown", handleEnter);
+  }, [onNext]);
+
   return (
     <div className={`${styles.feedback} ${styles[result]}`}>
       <div className={styles.heading}>

@@ -12,6 +12,7 @@ export interface IArenaScreenProps {
   lifetimeCorrect: number;
   onAdjectiveTrainer: () => void;
   onVerbTrainer: () => void;
+  onParticipleTrainer: () => void;
 }
 
 export function CArenaScreen({
@@ -20,6 +21,7 @@ export function CArenaScreen({
   lifetimeCorrect,
   onAdjectiveTrainer,
   onVerbTrainer,
+  onParticipleTrainer,
 }: IArenaScreenProps) {
   const copy = APP_COPY[language];
 
@@ -46,7 +48,7 @@ export function CArenaScreen({
 
         <div className={styles.sectionHeading}>
           <h2>{copy.trainers}</h2>
-          <span>02 / —</span>
+          <span>03 / —</span>
         </div>
 
         <div className={styles.grid}>
@@ -60,7 +62,7 @@ export function CArenaScreen({
                 </span>
               </div>
               <div>
-                <p className={styles.tileCategory}>ADJEKTIV-DEKLINATION</p>
+                <p className={styles.tileCategory}>ADJEKTIVENDUNGEN</p>
                 <h3>{copy.adjectiveTitle}</h3>
                 <p className={styles.tileDescription}>
                   {copy.adjectiveDescription}
@@ -94,7 +96,9 @@ export function CArenaScreen({
                 </span>
               </div>
               <div>
-                <p className={styles.tileCategory}>VERBREKTION</p>
+                <p className={styles.tileCategory}>
+                  VERBEN MIT PRÄPOSITIONEN
+                </p>
                 <h3>{copy.verbTitle}</h3>
                 <p className={styles.tileDescription}>{copy.verbDescription}</p>
               </div>
@@ -112,12 +116,46 @@ export function CArenaScreen({
               <small>an · auf · mit · über · um</small>
             </div>
           </button>
+
+          <button
+            className={`${styles.tile} ${styles.participleTile}`}
+            onClick={onParticipleTrainer}
+          >
+            <div className={styles.tileCopy}>
+              <div className={styles.tileTopline}>
+                <span className={styles.tileNumber}>03</span>
+                <span className={styles.tileStatus}>
+                  <i />
+                  {copy.available}
+                </span>
+              </div>
+              <div>
+                <p className={styles.tileCategory}>PARTIZIP II</p>
+                <h3>{copy.participleTitle}</h3>
+                <p className={styles.tileDescription}>
+                  {copy.participleDescription}
+                </p>
+              </div>
+              <div className={styles.tileBottom}>
+                <strong>
+                  {copy.enterArena} <i>→</i>
+                </strong>
+              </div>
+            </div>
+            <div className={styles.tileVisual} aria-hidden="true">
+              <span className={styles.tileOrbit} />
+              <strong>
+                ge<em>schrieb</em>en
+              </strong>
+              <small>gemacht · gesehen · angekommen</small>
+            </div>
+          </button>
         </div>
 
         <p className={styles.moreSoon}>↳ {copy.moreSoon}</p>
       </section>
 
-      <CAppFooter primary="ENDGEGNER / ARENA 02" spacious />
+      <CAppFooter primary="ENDGEGNER / ARENA 03" spacious />
     </CAppShell>
   );
 }

@@ -27,7 +27,7 @@ export function CAdjectiveStats({
 
   return (
     <CStatsDrawer
-      eyebrow="ADJEKTIV-ENDUNGEN / STATS"
+      eyebrow="ADJEKTIVENDUNGEN / STATS"
       titleId="adjective-stats-title"
       title={copy.statsTitle}
       subtitle={copy.statsSubtitle}

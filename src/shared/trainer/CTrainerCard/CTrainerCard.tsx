@@ -32,7 +32,7 @@ export interface ITrainerCardProps {
   streakLabel: string;
   streak: number;
   result: EAnswerResult | null;
-  modeControls: ReactNode;
+  modeControls?: ReactNode;
   mixedNote: string;
   verbAccent?: boolean;
   children: ReactNode;

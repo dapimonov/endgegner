@@ -7,6 +7,7 @@ export enum EAppView {
   Arena = "arena",
   AdjectiveEndings = "adjective-endings",
   VerbPatterns = "verb-patterns",
+  ParticipleTwo = "participle-two",
 }
 
 export enum EAdjectiveAnswerMode {
@@ -50,4 +51,12 @@ export interface IVerbPatternStat extends IStatItem {
 
 export interface IVerbStats {
   [key: string]: IVerbPatternStat;
+}
+
+export interface IParticipleStat extends IStatItem {
+  recent: boolean[];
+}
+
+export interface IParticipleStats {
+  [verbId: string]: IParticipleStat;
 }

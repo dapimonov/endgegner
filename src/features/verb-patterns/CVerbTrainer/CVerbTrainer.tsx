@@ -114,7 +114,7 @@ export function CVerbTrainer({
       )}
 
       <CAppFooter
-        primary="VERBREKTION / 02"
+        primary="VERBEN MIT PRÄPOSITIONEN / 02"
         secondary="LEARN THE PATTERN, NOT THE LIST."
       />
 

@@ -72,15 +72,15 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 
 .tile {
   width: 100%;
-  min-height: 560px;
+  min-height: 340px;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.85fr);
   padding: 0;
   overflow: hidden;
   text-align: left;
@@ -104,8 +104,9 @@
 }
 
 .tileCopy {
-  min-height: 350px;
-  padding: 32px;
+  min-width: 0;
+  min-height: 340px;
+  padding: 30px 34px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -155,10 +156,10 @@
 }
 
 .tileCopy h3 {
-  max-width: 520px;
+  max-width: 650px;
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(36px, 4.4vw, 51px);
+  font-size: clamp(38px, 5vw, 58px);
   line-height: 0.98;
   letter-spacing: -0.04em;
   font-weight: 500;
@@ -203,7 +204,8 @@
 
 .tileVisual {
   position: relative;
-  min-height: 210px;
+  min-width: 0;
+  min-height: 340px;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -228,7 +230,7 @@
   position: relative;
   z-index: 1;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(57px, 7vw, 82px);
+  font-size: clamp(62px, 7vw, 86px);
   letter-spacing: -0.07em;
   transform: rotate(-4deg);
 }
@@ -278,6 +280,40 @@
   transform: translate(-34px, 13px);
 }
 
+.participleTile .tileVisual {
+  background: var(--coral);
+  color: var(--ink);
+}
+
+.participleTile .tileVisual::after {
+  content: "03";
+  color: rgba(17, 24, 45, 0.28);
+}
+
+.participleTile .tileVisual strong {
+  font-size: clamp(39px, 4.5vw, 56px);
+  letter-spacing: -0.06em;
+}
+
+.participleTile .tileVisual strong em {
+  color: white;
+}
+
+.participleTile .tileOrbit {
+  border-color: rgba(255, 255, 255, 0.34);
+  transform: translate(46px, 22px);
+}
+
+@media (max-width: 900px) {
+  .tile {
+    grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.85fr);
+  }
+
+  .tileCopy h3 {
+    font-size: 44px;
+  }
+}
+
 .moreSoon {
   margin: 17px 4px 0;
   color: var(--muted);
@@ -306,6 +342,7 @@
   }
 
   .tile {
+    grid-template-columns: 1fr;
     min-height: 0;
     border-radius: 22px;
   }

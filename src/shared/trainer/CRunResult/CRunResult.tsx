@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { CPrimaryButton } from "../CPrimaryButton/CPrimaryButton";
 
 import styles from "./CRunResult.module.css";
@@ -8,12 +10,16 @@ export interface IRunResultProps {
   title: string;
   subtitle: string;
   accuracyLabel: string;
-  bestStreak: number;
-  bestStreakLabel: string;
+  bestStreak?: number;
+  bestStreakLabel?: string;
+  secondMetricValue?: ReactNode;
+  secondMetricLabel?: string;
   weakSpotLabel: string;
   weakSpot: string | null;
   againLabel: string;
   onAgain: () => void;
+  secondaryLabel?: string;
+  onSecondary?: () => void;
 }
 
 export function CRunResult({
@@ -22,12 +28,16 @@ export function CRunResult({
   title,
   subtitle,
   accuracyLabel,
-  bestStreak,
-  bestStreakLabel,
+  bestStreak = 0,
+  bestStreakLabel = "",
+  secondMetricValue,
+  secondMetricLabel,
   weakSpotLabel,
   weakSpot,
   againLabel,
   onAgain,
+  secondaryLabel,
+  onSecondary,
 }: IRunResultProps) {
   return (
     <article className={styles.card}>
@@ -43,8 +53,8 @@ export function CRunResult({
           <span>{accuracyLabel}</span>
         </div>
         <div>
-          <strong>×{bestStreak}</strong>
-          <span>{bestStreakLabel}</span>
+          <strong>{secondMetricValue ?? `×${bestStreak}`}</strong>
+          <span>{secondMetricLabel ?? bestStreakLabel}</span>
         </div>
       </div>
       {weakSpot && (
@@ -53,10 +63,17 @@ export function CRunResult({
           <strong>{weakSpot}</strong>
         </div>
       )}
-      <CPrimaryButton className={styles.button} onClick={onAgain}>
-        {againLabel}
-        <span>↻</span>
-      </CPrimaryButton>
+      <div className={styles.actions}>
+        <CPrimaryButton className={styles.button} onClick={onAgain}>
+          {againLabel}
+          <span>↻</span>
+        </CPrimaryButton>
+        {secondaryLabel && onSecondary && (
+          <button className={styles.secondary} onClick={onSecondary}>
+            {secondaryLabel}
+          </button>
+        )}
+      </div>
     </article>
   );
 }

@@ -12,6 +12,9 @@ export interface IAppHeaderProps {
   homeLabel?: string;
   onStats?: () => void;
   statsLabel?: string;
+  onMistakes?: () => void;
+  mistakesLabel?: string;
+  mistakesCount?: number;
 }
 
 export function CAppHeader({
@@ -23,6 +26,9 @@ export function CAppHeader({
   homeLabel,
   onStats,
   statsLabel,
+  onMistakes,
+  mistakesLabel,
+  mistakesCount = 0,
 }: IAppHeaderProps) {
   const brandContent = (
     <>
@@ -62,6 +68,13 @@ export function CAppHeader({
               <i />
             </span>
             <span className={styles.statsLabel}>{statsLabel}</span>
+          </button>
+        )}
+        {onMistakes && (
+          <button className={styles.mistakesTrigger} onClick={onMistakes}>
+            <span className={styles.mistakesIcon} aria-hidden="true">↻</span>
+            <span className={styles.mistakesLabel}>{mistakesLabel}</span>
+            <strong>{mistakesCount}</strong>
           </button>
         )}
         <CLanguageSwitch language={language} onChange={onLanguageChange} />

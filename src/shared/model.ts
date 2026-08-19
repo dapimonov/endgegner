@@ -24,6 +24,16 @@ export enum EAnswerResult {
   Wrong = "wrong",
 }
 
+export enum ETrainerRunKind {
+  Regular = "regular",
+  Mistakes = "mistakes",
+}
+
+export enum EMistakeReviewStep {
+  Source = "source",
+  Analogue = "analogue",
+}
+
 export interface IStatItem {
   correct: number;
   total: number;

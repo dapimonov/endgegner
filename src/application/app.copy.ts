@@ -262,3 +262,75 @@ export const VERB_COPY = {
       `${frame}. The reflexive pronoun agrees with the subject; the preposition and case belong to the whole pattern.`,
   },
 };
+
+export const REVIEW_COPY = {
+  [ELanguage.Russian]: {
+    trigger: "Ошибки",
+    eyebrow: "ЗАКРЕПЛЕНИЕ",
+    title: "Работа над ошибками",
+    subtitle:
+      "Сначала повторяем исходную ошибку, затем проверяем тот же навык на другом предложении.",
+    active: "требуют повторения",
+    mastered: "отработано",
+    sourceStepTitle: "Исходная ошибка",
+    sourceStepText: "Вернись к предложению, в котором была допущена ошибка.",
+    analogueStepTitle: "Проверка навыка",
+    analogueStepText: "Реши новое предложение с той же грамматической моделью.",
+    start: "Начать отработку",
+    emptyTitle: "Активных ошибок нет",
+    emptyHint:
+      "Новые ошибки из обычных забегов автоматически появятся здесь.",
+    close: "Закрыть работу над ошибками",
+    note: "Результаты этого режима не меняют основную статистику точности.",
+    runLabel: "ошибки",
+    sourceStep: "Шаг 1 из 2 · исходная ошибка",
+    analogueStep: "Шаг 2 из 2 · аналогичное задание",
+    added: "Добавлено в работу над ошибками.",
+    sourceCorrect:
+      "Первый шаг готов. Дальше появится другое задание на тот же навык.",
+    sourceWrong: "Исходная ошибка остаётся на повторение.",
+    analogueCorrect: "Навык закреплён — ошибка отработана.",
+    analogueWrong:
+      "Навык пока не закреплён. В следующий раз начнём с исходной ошибки.",
+    resultTitle: "Отработка завершена.",
+    resultSubtitle: "Ошибки прошли два шага: повтор и проверку навыка.",
+    masteredThisRun: "отработано сейчас",
+    continue: "Продолжить отработку",
+    backToRegular: "Обычный забег",
+  },
+  [ELanguage.English]: {
+    trigger: "Mistakes",
+    eyebrow: "REINFORCEMENT",
+    title: "Review mistakes",
+    subtitle:
+      "First repeat the original mistake, then prove the same skill in a different sentence.",
+    active: "need review",
+    mastered: "mastered",
+    sourceStepTitle: "Original mistake",
+    sourceStepText: "Return to the sentence where the mistake happened.",
+    analogueStepTitle: "Skill check",
+    analogueStepText: "Solve a new sentence built around the same grammar pattern.",
+    start: "Start mistake review",
+    emptyTitle: "No active mistakes",
+    emptyHint:
+      "New mistakes from regular runs will automatically appear here.",
+    close: "Close mistake review",
+    note: "Results from this mode do not change your main accuracy statistics.",
+    runLabel: "mistakes",
+    sourceStep: "Step 1 of 2 · original mistake",
+    analogueStep: "Step 2 of 2 · similar exercise",
+    added: "Added to mistake review.",
+    sourceCorrect:
+      "Step one is complete. A new exercise for the same skill comes next.",
+    sourceWrong: "The original mistake stays in review.",
+    analogueCorrect: "Skill confirmed — this mistake is mastered.",
+    analogueWrong:
+      "Not quite mastered yet. Next time you will restart from the original mistake.",
+    resultTitle: "Review complete.",
+    resultSubtitle:
+      "Each mistake went through the repeat and skill-check steps.",
+    masteredThisRun: "mastered now",
+    continue: "Continue review",
+    backToRegular: "Regular run",
+  },
+};

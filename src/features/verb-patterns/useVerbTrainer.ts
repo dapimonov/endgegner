@@ -7,6 +7,15 @@ import {
   type IVerbQuestion,
 } from "./data/verbQuestions";
 import { useStatsDrawer } from "../../shared/hooks/useStatsDrawer";
+import {
+  loadMistakeReviewState,
+  prepareMistakeReviewRun,
+  recordMistakeReviewAnswer,
+  registerMistake,
+  saveMistakeReviewState,
+  type IMistakeReviewRunItem,
+  type IMistakeReviewState,
+} from "../../shared/lib/mistakeReview";
 import { normalizeAnswer } from "../../shared/lib/normalizeAnswer";
 import {
   advanceCyclicRun,
@@ -18,6 +27,8 @@ import {
 } from "../../shared/lib/trainerCycle";
 import {
   EAnswerResult,
+  EMistakeReviewStep,
+  ETrainerRunKind,
   EVerbAnswerMode,
   type IVerbStats,
 } from "../../shared/model";
@@ -27,6 +38,8 @@ import {
   VERB_STATS_KEY,
   VERB_TRAINER_ID,
 } from "./verb.model";
+
+const REVIEW_MISTAKES_PER_RUN = 5;
 
 export interface IUseVerbTrainerOptions {
   onCorrect: () => void;
@@ -60,8 +73,19 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
     ITrainerCycleState<number> | null
   >(null);
   const [restored, setRestored] = useState(false);
+  const [runKind, setRunKind] = useState(ETrainerRunKind.Regular);
+  const [reviewState, setReviewState] = useState<
+    IMistakeReviewState<number>
+  >({ active: [], masteredIds: [] });
+  const [reviewItems, setReviewItems] = useState<
+    IMistakeReviewRunItem<IVerbQuestion, number>[]
+  >([]);
+  const [masteredAtRunStart, setMasteredAtRunStart] = useState(0);
   const statsDrawer = useStatsDrawer();
+  const reviewDrawer = useStatsDrawer();
   const question = questions[index];
+  const reviewItem =
+    runKind === ETrainerRunKind.Mistakes ? reviewItems[index] : null;
 
   useEffect(() => {
     const restore = window.setTimeout(() => {
@@ -83,6 +107,7 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
       }
 
       const savedCycle = loadTrainerCycleState<number>(VERB_TRAINER_ID);
+      const savedReview = loadMistakeReviewState<number>(VERB_TRAINER_ID);
       const activeRun = prepareCyclicRun({
         items: VERB_QUESTIONS,
         runSize: VERB_SESSION_LENGTH,
@@ -95,6 +120,7 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
       setQuestions(activeRun.items);
       setIndex(activeRun.state.cursor);
       setCycleState(activeRun.state);
+      setReviewState(savedReview);
       saveTrainerCycleState(VERB_TRAINER_ID, activeRun.state);
       setRestored(true);
     }, 0);
@@ -187,39 +213,85 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
       ? tokens[0] === question.reflexiveAnswer
       : true;
     const isCorrect = normalizedCandidate === normalizedExpected;
-    const patternStats = stats[question.patternId] ?? {
-      correct: 0,
-      total: 0,
-      prepositionErrors: 0,
-      reflexiveErrors: 0,
-    };
-    const nextStats: IVerbStats = {
-      ...stats,
-      [question.patternId]: {
-        correct: patternStats.correct + (isCorrect ? 1 : 0),
-        total: patternStats.total + 1,
-        prepositionErrors:
-          patternStats.prepositionErrors + (!prepositionCorrect ? 1 : 0),
-        reflexiveErrors:
-          patternStats.reflexiveErrors + (!reflexiveCorrect ? 1 : 0),
-      },
-    };
     const nextStreak = isCorrect ? streak + 1 : 0;
 
-    setStats(nextStats);
     setResult(isCorrect ? EAnswerResult.Correct : EAnswerResult.Wrong);
     setStreak(nextStreak);
     setBestStreak((current) => Math.max(current, nextStreak));
     if (isCorrect) {
       setCorrectCount((current) => current + 1);
-      onCorrect();
     }
-    localStorage.setItem(VERB_STATS_KEY, JSON.stringify(nextStats));
+
+    if (runKind === ETrainerRunKind.Regular) {
+      const patternStats = stats[question.patternId] ?? {
+        correct: 0,
+        total: 0,
+        prepositionErrors: 0,
+        reflexiveErrors: 0,
+      };
+      const nextStats: IVerbStats = {
+        ...stats,
+        [question.patternId]: {
+          correct: patternStats.correct + (isCorrect ? 1 : 0),
+          total: patternStats.total + 1,
+          prepositionErrors:
+            patternStats.prepositionErrors + (!prepositionCorrect ? 1 : 0),
+          reflexiveErrors:
+            patternStats.reflexiveErrors + (!reflexiveCorrect ? 1 : 0),
+        },
+      };
+      setStats(nextStats);
+      localStorage.setItem(VERB_STATS_KEY, JSON.stringify(nextStats));
+
+      if (isCorrect) {
+        onCorrect();
+      } else {
+        const nextReviewState = registerMistake(
+          reviewState,
+          question.id,
+          question.patternId,
+        );
+        setReviewState(nextReviewState);
+        saveMistakeReviewState(VERB_TRAINER_ID, nextReviewState);
+      }
+      return;
+    }
+
+    if (reviewItem) {
+      const nextReviewState = recordMistakeReviewAnswer(
+        reviewState,
+        reviewItem.sourceQuestionId,
+        reviewItem.step,
+        isCorrect,
+      );
+      setReviewState(nextReviewState);
+      saveMistakeReviewState(VERB_TRAINER_ID, nextReviewState);
+
+      if (!isCorrect && reviewItem.step === EMistakeReviewStep.Source) {
+        setReviewItems((current) =>
+          current.filter(
+            (item, itemIndex) =>
+              itemIndex <= index ||
+              item.sourceQuestionId !== reviewItem.sourceQuestionId ||
+              item.step !== EMistakeReviewStep.Analogue,
+          ),
+        );
+        setQuestions((current) =>
+          current.filter(
+            (_item, itemIndex) =>
+              itemIndex <= index ||
+              reviewItems[itemIndex]?.sourceQuestionId !==
+                reviewItem.sourceQuestionId ||
+              reviewItems[itemIndex]?.step !== EMistakeReviewStep.Analogue,
+          ),
+        );
+      }
+    }
   }
 
   function goNext() {
     if (index === questions.length - 1) {
-      if (cycleState) {
+      if (runKind === ETrainerRunKind.Regular && cycleState) {
         const completedCycle = completeCyclicRun(cycleState);
         setCycleState(completedCycle);
         saveTrainerCycleState(VERB_TRAINER_ID, completedCycle);
@@ -227,7 +299,7 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
       setFinished(true);
       return;
     }
-    if (cycleState) {
+    if (runKind === ETrainerRunKind.Regular && cycleState) {
       const advancedCycle = advanceCyclicRun(cycleState);
       setCycleState(advancedCycle);
       saveTrainerCycleState(VERB_TRAINER_ID, advancedCycle);
@@ -236,7 +308,7 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
     resetAnswer();
   }
 
-  function startAgain() {
+  function startRegularRun() {
     const nextRun = prepareCyclicRun({
       items: VERB_QUESTIONS,
       runSize: VERB_SESSION_LENGTH,
@@ -245,6 +317,8 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
         cycleState ?? loadTrainerCycleState<number>(VERB_TRAINER_ID),
     });
     setQuestions(nextRun.items);
+    setReviewItems([]);
+    setRunKind(ETrainerRunKind.Regular);
     setIndex(nextRun.state.cursor);
     setCycleState(nextRun.state);
     saveTrainerCycleState(VERB_TRAINER_ID, nextRun.state);
@@ -255,10 +329,75 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
     setFinished(false);
   }
 
+  function startReview() {
+    if (!reviewState.active.length) {
+      startRegularRun();
+      reviewDrawer.close();
+      return;
+    }
+
+    if (
+      runKind === ETrainerRunKind.Regular &&
+      !finished &&
+      result &&
+      cycleState
+    ) {
+      const nextCycle =
+        index === questions.length - 1
+          ? completeCyclicRun(cycleState)
+          : advanceCyclicRun(cycleState);
+      setCycleState(nextCycle);
+      saveTrainerCycleState(VERB_TRAINER_ID, nextCycle);
+    }
+
+    const nextReviewItems = prepareMistakeReviewRun({
+      items: VERB_QUESTIONS,
+      state: reviewState,
+      maxMistakes: REVIEW_MISTAKES_PER_RUN,
+      getId: (item) => item.id,
+      getSkillKey: (item) => item.patternId,
+    });
+    if (!nextReviewItems.length) return;
+
+    setRunKind(ETrainerRunKind.Mistakes);
+    setReviewItems(nextReviewItems);
+    setQuestions(nextReviewItems.map((item) => item.question));
+    setMasteredAtRunStart(reviewState.masteredIds.length);
+    setIndex(0);
+    resetAnswer();
+    setCorrectCount(0);
+    setStreak(0);
+    setBestStreak(0);
+    setFinished(false);
+    statsDrawer.close();
+    reviewDrawer.close();
+  }
+
+  function startAgain() {
+    if (
+      runKind === ETrainerRunKind.Mistakes &&
+      reviewState.active.length
+    ) {
+      startReview();
+      return;
+    }
+    startRegularRun();
+  }
+
   function switchMode(nextMode: EVerbAnswerMode) {
     if (result) return;
     setMode(nextMode);
     resetAnswer();
+  }
+
+  function openStats() {
+    reviewDrawer.close();
+    statsDrawer.open();
+  }
+
+  function openReview() {
+    statsDrawer.close();
+    reviewDrawer.open();
   }
 
   return {
@@ -277,11 +416,21 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
     streak,
     bestStreak,
     finished,
+    runKind,
+    reviewItem,
+    reviewState,
+    reviewDrawer,
+    masteredThisRun: Math.max(
+      0,
+      reviewState.masteredIds.length - masteredAtRunStart,
+    ),
     stats,
     statsOverview,
     orderedPatterns,
     weakSpot,
     statsDrawer,
+    openStats,
+    openReview,
     choiceAnswer,
     submittedAnswer,
     choiceComplete,
@@ -289,6 +438,8 @@ export function useVerbTrainer({ onCorrect }: IUseVerbTrainerOptions) {
     submit,
     goNext,
     startAgain,
+    startRegularRun,
+    startReview,
     switchMode,
   };
 }

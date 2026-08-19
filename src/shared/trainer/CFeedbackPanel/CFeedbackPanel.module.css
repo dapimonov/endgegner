@@ -71,6 +71,18 @@
   font-size: 12px;
 }
 
+.status {
+  margin: 11px 0 0 44px;
+  padding: 9px 11px;
+  max-width: 680px;
+  border: 1px solid rgba(17, 24, 45, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.46);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .next {
   margin: 17px 0 0 44px;
 }
@@ -86,6 +98,7 @@
   .tags,
   .rule,
   .submitted,
+  .status,
   .next {
     margin-left: 0;
   }

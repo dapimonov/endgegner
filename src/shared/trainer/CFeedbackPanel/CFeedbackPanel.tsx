@@ -12,6 +12,7 @@ export interface IFeedbackPanelProps {
   tags: ReactNode;
   rule: ReactNode;
   submittedAnswer?: ReactNode;
+  statusMessage?: string;
   nextLabel: string;
   onNext: () => void;
 }
@@ -23,6 +24,7 @@ export function CFeedbackPanel({
   tags,
   rule,
   submittedAnswer,
+  statusMessage,
   nextLabel,
   onNext,
 }: IFeedbackPanelProps) {
@@ -42,6 +44,7 @@ export function CFeedbackPanel({
       {submittedAnswer && (
         <p className={styles.submitted}>{submittedAnswer}</p>
       )}
+      {statusMessage && <p className={styles.status}>{statusMessage}</p>}
       <CPrimaryButton className={styles.next} onClick={onNext}>
         {nextLabel}
         <span>→</span>

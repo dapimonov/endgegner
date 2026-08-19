@@ -1,8 +1,13 @@
-import { APP_COPY } from "../../../application/app.copy";
+import {
+  APP_COPY,
+  REVIEW_COPY,
+} from "../../../application/app.copy";
 import {
   EAdjectiveAnswerMode,
   EAnswerResult,
   ELanguage,
+  EMistakeReviewStep,
+  ETrainerRunKind,
 } from "../../../shared/model";
 import { CFeedbackPanel } from "../../../shared/trainer/CFeedbackPanel/CFeedbackPanel";
 import { CPrimaryButton } from "../../../shared/trainer/CPrimaryButton/CPrimaryButton";
@@ -13,27 +18,38 @@ import {
   CTrainerExercise,
   trainerCardStyles,
 } from "../../../shared/trainer/CTrainerCard/CTrainerCard";
-import {
-  ADJECTIVE_ENDINGS,
-  ADJECTIVE_SESSION_LENGTH,
-} from "../adjective.model";
+import { ADJECTIVE_ENDINGS } from "../adjective.model";
 import { useAdjectiveTrainer } from "../useAdjectiveTrainer";
 
 import styles from "./CAdjectiveExercise.module.css";
 
 export interface IAdjectiveExerciseProps {
   copy: (typeof APP_COPY)[ELanguage.Russian];
+  reviewCopy: (typeof REVIEW_COPY)[ELanguage.Russian];
   trainer: ReturnType<typeof useAdjectiveTrainer>;
   ruleText: string;
 }
 
 export function CAdjectiveExercise({
   copy,
+  reviewCopy,
   trainer,
   ruleText,
 }: IAdjectiveExerciseProps) {
   const question = trainer.question;
   if (!question) return null;
+  const isReview = trainer.runKind === ETrainerRunKind.Mistakes;
+  const reviewStatus = !isReview
+    ? trainer.result === EAnswerResult.Wrong
+      ? reviewCopy.added
+      : undefined
+    : trainer.reviewItem?.step === EMistakeReviewStep.Source
+      ? trainer.result === EAnswerResult.Correct
+        ? reviewCopy.sourceCorrect
+        : reviewCopy.sourceWrong
+      : trainer.result === EAnswerResult.Correct
+        ? reviewCopy.analogueCorrect
+        : reviewCopy.analogueWrong;
 
   const sentence = (
     <>
@@ -60,9 +76,9 @@ export function CAdjectiveExercise({
 
   return (
     <CTrainerCard
-      runLabel={copy.run}
+      runLabel={isReview ? reviewCopy.runLabel : copy.run}
       position={trainer.index + 1}
-      total={ADJECTIVE_SESSION_LENGTH}
+      total={trainer.questions.length}
       streakLabel={copy.streak}
       streak={trainer.streak}
       result={trainer.result}
@@ -76,7 +92,13 @@ export function CAdjectiveExercise({
           onSecond={() => trainer.switchMode(EAdjectiveAnswerMode.Ending)}
         />
       }
-      mixedNote={copy.mixedNote}
+      mixedNote={
+        isReview
+          ? trainer.reviewItem?.step === EMistakeReviewStep.Source
+            ? reviewCopy.sourceStep
+            : reviewCopy.analogueStep
+          : copy.mixedNote
+      }
     >
       <CTrainerExercise
         lemmaLabel={copy.adjective}
@@ -90,7 +112,7 @@ export function CAdjectiveExercise({
             onSubmit={trainer.submit}
             placeholder={copy.placeholder}
             checkLabel={copy.check}
-            focusKey={trainer.index}
+            focusKey={trainer.index + (isReview ? 1000 : 0)}
           />
         )}
 
@@ -156,6 +178,7 @@ export function CAdjectiveExercise({
                 </>
               ) : undefined
             }
+            statusMessage={reviewStatus}
             nextLabel={
               trainer.index === trainer.questions.length - 1
                 ? copy.finish

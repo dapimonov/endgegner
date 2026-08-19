@@ -3,6 +3,15 @@ import { useEffect, useMemo, useState } from "react";
 
 import { QUESTIONS, type IQuestion } from "./data/questions";
 import { useStatsDrawer } from "../../shared/hooks/useStatsDrawer";
+import {
+  loadMistakeReviewState,
+  prepareMistakeReviewRun,
+  recordMistakeReviewAnswer,
+  registerMistake,
+  saveMistakeReviewState,
+  type IMistakeReviewRunItem,
+  type IMistakeReviewState,
+} from "../../shared/lib/mistakeReview";
 import { normalizeAnswer } from "../../shared/lib/normalizeAnswer";
 import {
   advanceCyclicRun,
@@ -15,6 +24,8 @@ import {
 import {
   EAdjectiveAnswerMode,
   EAnswerResult,
+  EMistakeReviewStep,
+  ETrainerRunKind,
   type IAdjectiveStats,
 } from "../../shared/model";
 import {
@@ -28,6 +39,7 @@ import {
 } from "./adjective.model";
 
 const STATS_KEY = "endgegner-stats";
+const REVIEW_MISTAKES_PER_RUN = 5;
 
 export interface IUseAdjectiveTrainerOptions {
   mode: EAdjectiveAnswerMode;
@@ -71,8 +83,19 @@ export function useAdjectiveTrainer({
   const [cycleState, setCycleState] = useState<
     ITrainerCycleState<number> | null
   >(null);
+  const [runKind, setRunKind] = useState(ETrainerRunKind.Regular);
+  const [reviewState, setReviewState] = useState<
+    IMistakeReviewState<number>
+  >({ active: [], masteredIds: [] });
+  const [reviewItems, setReviewItems] = useState<
+    IMistakeReviewRunItem<IQuestion, number>[]
+  >([]);
+  const [masteredAtRunStart, setMasteredAtRunStart] = useState(0);
   const statsDrawer = useStatsDrawer();
+  const reviewDrawer = useStatsDrawer();
   const question = questions[index];
+  const reviewItem =
+    runKind === ETrainerRunKind.Mistakes ? reviewItems[index] : null;
 
   useEffect(() => {
     const restore = window.setTimeout(() => {
@@ -84,6 +107,9 @@ export function useAdjectiveTrainer({
       }
 
       const savedCycle = loadTrainerCycleState<number>(ADJECTIVE_TRAINER_ID);
+      const savedReview = loadMistakeReviewState<number>(
+        ADJECTIVE_TRAINER_ID,
+      );
       const activeRun = prepareCyclicRun({
         items: QUESTIONS,
         runSize: ADJECTIVE_SESSION_LENGTH,
@@ -95,6 +121,7 @@ export function useAdjectiveTrainer({
       setQuestions(activeRun.items);
       setIndex(activeRun.state.cursor);
       setCycleState(activeRun.state);
+      setReviewState(savedReview);
       saveTrainerCycleState(ADJECTIVE_TRAINER_ID, activeRun.state);
     }, 0);
 
@@ -105,6 +132,7 @@ export function useAdjectiveTrainer({
     function handleShortcut(event: KeyboardEvent) {
       if (
         statsDrawer.isOpen ||
+        reviewDrawer.isOpen ||
         finished ||
         result ||
         mode !== EAdjectiveAnswerMode.Ending
@@ -124,7 +152,14 @@ export function useAdjectiveTrainer({
 
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [finished, mode, result, selectedEnding, statsDrawer.isOpen]);
+  }, [
+    finished,
+    mode,
+    result,
+    reviewDrawer.isOpen,
+    selectedEnding,
+    statsDrawer.isOpen,
+  ]);
 
   const answerForSentence = useMemo(() => {
     if (!question) return "";
@@ -198,28 +233,74 @@ export function useAdjectiveTrainer({
       normalizeAnswer(expected);
     const nextStreak = isCorrect ? streak + 1 : 0;
     const key = adjectiveSkillKey(question);
-    const nextStats: IAdjectiveStats = {
-      ...stats,
-      [key]: {
-        correct: (stats[key]?.correct ?? 0) + (isCorrect ? 1 : 0),
-        total: (stats[key]?.total ?? 0) + 1,
-      },
-    };
 
     setResult(isCorrect ? EAnswerResult.Correct : EAnswerResult.Wrong);
-    setStats(nextStats);
     setStreak(nextStreak);
     setBestStreak((current) => Math.max(current, nextStreak));
     if (isCorrect) {
       setCorrectCount((current) => current + 1);
-      onCorrect();
     }
-    localStorage.setItem(STATS_KEY, JSON.stringify(nextStats));
+
+    if (runKind === ETrainerRunKind.Regular) {
+      const nextStats: IAdjectiveStats = {
+        ...stats,
+        [key]: {
+          correct: (stats[key]?.correct ?? 0) + (isCorrect ? 1 : 0),
+          total: (stats[key]?.total ?? 0) + 1,
+        },
+      };
+      setStats(nextStats);
+      localStorage.setItem(STATS_KEY, JSON.stringify(nextStats));
+
+      if (isCorrect) {
+        onCorrect();
+      } else {
+        const nextReviewState = registerMistake(
+          reviewState,
+          question.id,
+          key,
+        );
+        setReviewState(nextReviewState);
+        saveMistakeReviewState(ADJECTIVE_TRAINER_ID, nextReviewState);
+      }
+      return;
+    }
+
+    if (reviewItem) {
+      const nextReviewState = recordMistakeReviewAnswer(
+        reviewState,
+        reviewItem.sourceQuestionId,
+        reviewItem.step,
+        isCorrect,
+      );
+      setReviewState(nextReviewState);
+      saveMistakeReviewState(ADJECTIVE_TRAINER_ID, nextReviewState);
+
+      if (!isCorrect && reviewItem.step === EMistakeReviewStep.Source) {
+        setReviewItems((current) =>
+          current.filter(
+            (item, itemIndex) =>
+              itemIndex <= index ||
+              item.sourceQuestionId !== reviewItem.sourceQuestionId ||
+              item.step !== EMistakeReviewStep.Analogue,
+          ),
+        );
+        setQuestions((current) =>
+          current.filter(
+            (_item, itemIndex) =>
+              itemIndex <= index ||
+              reviewItems[itemIndex]?.sourceQuestionId !==
+                reviewItem.sourceQuestionId ||
+              reviewItems[itemIndex]?.step !== EMistakeReviewStep.Analogue,
+          ),
+        );
+      }
+    }
   }
 
   function goNext() {
     if (index === questions.length - 1) {
-      if (cycleState) {
+      if (runKind === ETrainerRunKind.Regular && cycleState) {
         const completedCycle = completeCyclicRun(cycleState);
         setCycleState(completedCycle);
         saveTrainerCycleState(ADJECTIVE_TRAINER_ID, completedCycle);
@@ -227,7 +308,7 @@ export function useAdjectiveTrainer({
       setFinished(true);
       return;
     }
-    if (cycleState) {
+    if (runKind === ETrainerRunKind.Regular && cycleState) {
       const advancedCycle = advanceCyclicRun(cycleState);
       setCycleState(advancedCycle);
       saveTrainerCycleState(ADJECTIVE_TRAINER_ID, advancedCycle);
@@ -236,7 +317,7 @@ export function useAdjectiveTrainer({
     resetAnswer();
   }
 
-  function startAgain() {
+  function startRegularRun() {
     const nextRun = prepareCyclicRun({
       items: QUESTIONS,
       runSize: ADJECTIVE_SESSION_LENGTH,
@@ -246,6 +327,8 @@ export function useAdjectiveTrainer({
         loadTrainerCycleState<number>(ADJECTIVE_TRAINER_ID),
     });
     setQuestions(nextRun.items);
+    setReviewItems([]);
+    setRunKind(ETrainerRunKind.Regular);
     setIndex(nextRun.state.cursor);
     setCycleState(nextRun.state);
     saveTrainerCycleState(ADJECTIVE_TRAINER_ID, nextRun.state);
@@ -254,6 +337,61 @@ export function useAdjectiveTrainer({
     setStreak(0);
     setBestStreak(0);
     setFinished(false);
+  }
+
+  function startReview() {
+    if (!reviewState.active.length) {
+      startRegularRun();
+      reviewDrawer.close();
+      return;
+    }
+
+    if (
+      runKind === ETrainerRunKind.Regular &&
+      !finished &&
+      result &&
+      cycleState
+    ) {
+      const nextCycle =
+        index === questions.length - 1
+          ? completeCyclicRun(cycleState)
+          : advanceCyclicRun(cycleState);
+      setCycleState(nextCycle);
+      saveTrainerCycleState(ADJECTIVE_TRAINER_ID, nextCycle);
+    }
+
+    const nextReviewItems = prepareMistakeReviewRun({
+      items: QUESTIONS,
+      state: reviewState,
+      maxMistakes: REVIEW_MISTAKES_PER_RUN,
+      getId: (item) => item.id,
+      getSkillKey: adjectiveSkillKey,
+    });
+    if (!nextReviewItems.length) return;
+
+    setRunKind(ETrainerRunKind.Mistakes);
+    setReviewItems(nextReviewItems);
+    setQuestions(nextReviewItems.map((item) => item.question));
+    setMasteredAtRunStart(reviewState.masteredIds.length);
+    setIndex(0);
+    resetAnswer();
+    setCorrectCount(0);
+    setStreak(0);
+    setBestStreak(0);
+    setFinished(false);
+    statsDrawer.close();
+    reviewDrawer.close();
+  }
+
+  function startAgain() {
+    if (
+      runKind === ETrainerRunKind.Mistakes &&
+      reviewState.active.length
+    ) {
+      startReview();
+      return;
+    }
+    startRegularRun();
   }
 
   function switchMode(nextMode: EAdjectiveAnswerMode) {
@@ -270,7 +408,13 @@ export function useAdjectiveTrainer({
         : best,
     );
     setActiveStatsArticle(mostPracticed);
+    reviewDrawer.close();
     statsDrawer.open();
+  }
+
+  function openReview() {
+    statsDrawer.close();
+    reviewDrawer.open();
   }
 
   return {
@@ -287,6 +431,14 @@ export function useAdjectiveTrainer({
     streak,
     bestStreak,
     finished,
+    runKind,
+    reviewItem,
+    reviewState,
+    reviewDrawer,
+    masteredThisRun: Math.max(
+      0,
+      reviewState.masteredIds.length - masteredAtRunStart,
+    ),
     stats,
     statsOverview,
     activeStatsArticle,
@@ -296,9 +448,12 @@ export function useAdjectiveTrainer({
     weakSpotKey,
     statsDrawer,
     openStats,
+    openReview,
     submit,
     goNext,
     startAgain,
+    startRegularRun,
+    startReview,
     switchMode,
   };
 }

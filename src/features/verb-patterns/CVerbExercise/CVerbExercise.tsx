@@ -2,10 +2,15 @@ import {
   PREPOSITION_CHOICES,
   REFLEXIVE_CHOICES,
 } from "../data/verbQuestions";
-import { VERB_COPY } from "../../../application/app.copy";
+import {
+  REVIEW_COPY,
+  VERB_COPY,
+} from "../../../application/app.copy";
 import {
   EAnswerResult,
   ELanguage,
+  EMistakeReviewStep,
+  ETrainerRunKind,
   EVerbAnswerMode,
 } from "../../../shared/model";
 import { CFeedbackPanel } from "../../../shared/trainer/CFeedbackPanel/CFeedbackPanel";
@@ -18,18 +23,35 @@ import {
   trainerCardStyles,
 } from "../../../shared/trainer/CTrainerCard/CTrainerCard";
 import { useVerbTrainer } from "../useVerbTrainer";
-import { bareVerb, VERB_SESSION_LENGTH } from "../verb.model";
+import { bareVerb } from "../verb.model";
 
 import styles from "./CVerbExercise.module.css";
 
 export interface IVerbExerciseProps {
   copy: (typeof VERB_COPY)[ELanguage.Russian];
+  reviewCopy: (typeof REVIEW_COPY)[ELanguage.Russian];
   trainer: ReturnType<typeof useVerbTrainer>;
 }
 
-export function CVerbExercise({ copy, trainer }: IVerbExerciseProps) {
+export function CVerbExercise({
+  copy,
+  reviewCopy,
+  trainer,
+}: IVerbExerciseProps) {
   const question = trainer.question;
   if (!question) return null;
+  const isReview = trainer.runKind === ETrainerRunKind.Mistakes;
+  const reviewStatus = !isReview
+    ? trainer.result === EAnswerResult.Wrong
+      ? reviewCopy.added
+      : undefined
+    : trainer.reviewItem?.step === EMistakeReviewStep.Source
+      ? trainer.result === EAnswerResult.Correct
+        ? reviewCopy.sourceCorrect
+        : reviewCopy.sourceWrong
+      : trainer.result === EAnswerResult.Correct
+        ? reviewCopy.analogueCorrect
+        : reviewCopy.analogueWrong;
 
   const sentence = (
     <>
@@ -53,9 +75,9 @@ export function CVerbExercise({ copy, trainer }: IVerbExerciseProps) {
 
   return (
     <CTrainerCard
-      runLabel={copy.run}
+      runLabel={isReview ? reviewCopy.runLabel : copy.run}
       position={trainer.index + 1}
-      total={VERB_SESSION_LENGTH}
+      total={trainer.questions.length}
       streakLabel={copy.streak}
       streak={trainer.streak}
       result={trainer.result}
@@ -69,7 +91,13 @@ export function CVerbExercise({ copy, trainer }: IVerbExerciseProps) {
           onSecond={() => trainer.switchMode(EVerbAnswerMode.Choice)}
         />
       }
-      mixedNote={copy.mixedNote}
+      mixedNote={
+        isReview
+          ? trainer.reviewItem?.step === EMistakeReviewStep.Source
+            ? reviewCopy.sourceStep
+            : reviewCopy.analogueStep
+          : copy.mixedNote
+      }
       verbAccent
     >
       <CTrainerExercise
@@ -85,7 +113,7 @@ export function CVerbExercise({ copy, trainer }: IVerbExerciseProps) {
             onSubmit={trainer.submit}
             placeholder={copy.placeholder}
             checkLabel={copy.check}
-            focusKey={trainer.index}
+            focusKey={trainer.index + (isReview ? 1000 : 0)}
           />
         )}
 
@@ -173,6 +201,7 @@ export function CVerbExercise({ copy, trainer }: IVerbExerciseProps) {
                 </>
               ) : undefined
             }
+            statusMessage={reviewStatus}
             nextLabel={
               trainer.index === trainer.questions.length - 1
                 ? copy.finish

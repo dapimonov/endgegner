@@ -68,7 +68,8 @@
   font-size: 15px;
 }
 
-.statsTrigger {
+.statsTrigger,
+.mistakesTrigger {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.48);
@@ -84,15 +85,33 @@
     transform 0.18s ease;
 }
 
-.statsTrigger:hover {
+.statsTrigger:hover,
+.mistakesTrigger:hover {
   background: var(--paper);
   border-color: rgba(17, 24, 45, 0.3);
   transform: translateY(-1px);
 }
 
-.statsTrigger:focus-visible {
+.statsTrigger:focus-visible,
+.mistakesTrigger:focus-visible {
   outline: 3px solid rgba(92, 124, 255, 0.3);
   outline-offset: 2px;
+}
+
+.mistakesTrigger strong {
+  min-width: 20px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--coral);
+  color: white;
+  font-size: 9px;
+}
+
+.mistakesIcon {
+  color: var(--coral);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .statsIcon {
@@ -162,11 +181,13 @@
     gap: 7px;
   }
 
-  .statsTrigger {
+  .statsTrigger,
+  .mistakesTrigger {
     padding: 7px 9px;
   }
 
-  .statsLabel {
+  .statsLabel,
+  .mistakesLabel {
     display: none;
   }
 

@@ -118,7 +118,7 @@ const copy = {
     bestStreak: "best streak",
     weakSpot: "Train this next",
     again: "Start another run",
-    statsTitle: "Government statistics",
+    statsTitle: "Verb Pattern Statistics",
     statsSubtitle: "Accuracy for every complete verb pattern.",
     totalAnswers: "total answers",
     totalMistakes: "mistakes",
